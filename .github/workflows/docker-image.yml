@@ -1,0 +1,34 @@
+name: Docker Image CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Tag from https://github.com/orgs/Contrast-Security-Inc/packages/container/package/contrast you want to use
+        required: true
+        type: string
+        
+
+jobs:
+  build_tag_publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+   
+    - name: Log into Docker Hub
+      if: github.event_name != 'pull_request'
+      uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+      with:
+        username: andersonshatch
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        
+    - name: Build and push Docker image
+      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      with:
+        context: .
+        push: true
+        build-args: |
+          BASE_VERSION=${{ github.event.inputs.version }}
+        tags: |
+          andersonshatch/ts:${{ github.event.inputs.version }}
+          andersonshatch/ts:latest
